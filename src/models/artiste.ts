@@ -38,5 +38,4 @@ const artistSchema = new schema(
 
 const Artist = mongoose.model("Artist", artistSchema);
 
-
 export { Artist };
