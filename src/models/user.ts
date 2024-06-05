@@ -1,5 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
-
+import { isEmail } from "validator";
 // Define the TypeScript interface for a User
 interface IUser extends Document {
   firstname: string;
@@ -9,7 +9,7 @@ interface IUser extends Document {
   isAdmin: boolean;
 }
 
-// utilisateur
+// Utilisateur
 const userSchema = new Schema<IUser>(
   {
     firstname: {
@@ -23,13 +23,14 @@ const userSchema = new Schema<IUser>(
     email: {
       type: String,
       required: [true, "Email address is required."],
+      lowercase: true,
       unique: true,
       validate: {
-        validator: function (v: string) {
-          return /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/.test(v);
+        validator: function (value: string) {
+          // Use the isEmail function from the validator package
+          return isEmail(value);
         },
-        message: (props: { value: string }) =>
-          `${props.value} is not a valid email address. Please enter a valid email.`,
+        message: "Please enter a valid email.",
       },
     },
     password: {
