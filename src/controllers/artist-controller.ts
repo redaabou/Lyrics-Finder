@@ -1,5 +1,4 @@
-import mongoose from "mongoose";
-import { Artist } from "../models/artiste";
+import  Artist  from "../models/artiste";
 import Express from "express";
 
 export const addArtist = async (

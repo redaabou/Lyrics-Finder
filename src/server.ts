@@ -5,9 +5,7 @@ import mongoose from "mongoose";
 dotenv.config();
 
 // database connection
-const dbURI =
-  "mongodb+srv://Bam29:idder1234@nodetuts.tkjwfon.mongodb.net/node-tuts?retryWrites=true&w=majority&appName=nodetuts";
-//process.env.DB_URI
+const dbURI = process.env.DB_URI;
 mongoose
   .connect(dbURI)
   .then((result) =>
