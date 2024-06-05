@@ -10,34 +10,35 @@ interface IUser extends Document {
 }
 
 // utilisateur
-const userSchema =  new Schema<IUser>(
+const userSchema = new Schema<IUser>(
   {
     firstname: {
       type: String,
-      required: true,
+      required: [true, "Please provide your first name."],
     },
     lastname: {
       type: String,
-      required: true,
+      required: [true, "Please provide your last name."],
     },
     email: {
       type: String,
-      required: true,
+      required: [true, "Email address is required."],
       unique: true,
       validate: {
-        validator: function(v: string) {
+        validator: function (v: string) {
           return /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/.test(v);
         },
-        message: (props: { value: string }) => `${props.value} is not a valid email!`
+        message: (props: { value: string }) =>
+          `${props.value} is not a valid email address. Please enter a valid email.`,
       },
     },
     password: {
       type: String,
-      required: true,
+      required: [true, "Password is required."],
+      minlength: [8, "Password must be at least 8 characters long."],
     },
     isAdmin: {
       type: Boolean,
-      required: true,
       default: false,
     },
   },

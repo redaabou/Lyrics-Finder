@@ -1,12 +1,16 @@
 // importe the user model from the database
+import { User } from "../models/user";
+import Express from "express";
 
+// implement the functionalty
 const singUpPost = async (req, res) => {
   const { email, password, firstname, lastname } = req.body;
   try {
     // creat a new user
-
+    const user = new User({ email, password, firstname, lastname });
+    user.save();
     // return just for the test
-    res.json({ email, password, firstname, lastname });
+    res.json({ user });
   } catch (error) {
     res.status(404).json({ error });
   }
