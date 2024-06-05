@@ -8,13 +8,13 @@ interface ISong extends Document {
   artist: mongoose.Types.ObjectId;
 }
 
-const SongSchema: Schema = new Schema(
+const SongSchema = new Schema<ISong>(
   {
     genre: { type: String, required: true },
     title: { type: String, required: true },
     recorded_date: { type: Date },
     lyrics: { type: String, required: true },
-    artist: { type: mongoose.Types.ObjectId, ref: "Artist", required: true },
+    artist: { type: Schema.Types.ObjectId, ref: "Artist", required: true },
   },
   { timestamps: true }
 );

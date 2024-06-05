@@ -1,18 +1,13 @@
-import app from "./app";
-import dotenv from "dotenv";
-import mongoose from "mongoose";
+// src/server.ts
+
+import dotenv from 'dotenv';
+import app from './app';
+import connectDB from './config/db';
 
 dotenv.config();
+// Connect to MongoDB
+connectDB();
 
-// database connection
-const dbURI =
-  "mongodb+srv://Bam29:idder1234@nodetuts.tkjwfon.mongodb.net/node-tuts?retryWrites=true&w=majority&appName=nodetuts";
-//process.env.DB_URI
-mongoose
-  .connect(dbURI)
-  .then((result) =>
-    app.listen(3000, () => {
-      console.log("sever is runing");
-    })
-  )
-  .catch((err) => console.log(err));
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

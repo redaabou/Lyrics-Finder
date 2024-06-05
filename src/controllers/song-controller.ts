@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import Song from '../models/Song';
-import Artist from '../models/Artist';
+import Song from '../models/chanson';
+import Artist from '../models/artiste';
 
 // Contrôleur pour obtenir les paroles d'une chanson
 export const getLyrics = async (req: Request, res: Response): Promise<void> => {
