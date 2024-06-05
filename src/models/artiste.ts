@@ -10,14 +10,17 @@ interface IArtist extends Document {
   died_date?: Date;
 }
 
-const ArtistSchema = new Schema<IArtist>({
-  firstname: { type: String, required: true },
-  lastname: { type: String, required: true },
-  picture_url: { type: String },
-  genre: { type: String },
-  born_date: { type: Date },
-  born_city: { type: String },
-  died_date: { type: Date },
-});
+const ArtistSchema = new Schema<IArtist>(
+  {
+    firstname: { type: String, required: true },
+    lastname: { type: String, required: true },
+    picture_url: { type: String },
+    genre: { type: String },
+    born_date: { type: Date },
+    born_city: { type: String },
+    died_date: { type: Date },
+  },
+  { timestamps: true }
+);
 
 export default mongoose.model<IArtist>("Artist", ArtistSchema);
