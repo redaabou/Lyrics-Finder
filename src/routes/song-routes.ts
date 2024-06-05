@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { getLyrics, getArtists, getSongsByArtist, searchSongByLyrics, createSong } from '../controllers/song-controller';
-
+import { validateCreateSong } from '../middleware/songValidation';
 const router: Router = Router();
 
 // Route pour obtenir les paroles d'une chanson
@@ -18,7 +18,7 @@ router.get('/search/lyrics', searchSongByLyrics);
 
 // Routw de la creation d un chanson
 
-router.post('/addsong', createSong);
+router.post('/addsong',validateCreateSong, createSong);
 
 
 export default router;

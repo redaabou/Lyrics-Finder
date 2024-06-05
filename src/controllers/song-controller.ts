@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { validationResult } from 'express-validator';
 import Song from '../models/chanson';
 import Artist from '../models/artiste';
 
@@ -59,7 +60,12 @@ export const searchSongByLyrics = async (req: Request, res: Response): Promise<v
   }
 };
 
-export const createSong = async (req: Request, res: Response): Promise<void> => {
+export const createSong = async (req: Request, res: Response): Promise<Response> => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   try {
     const { genre, title, recorded_date, lyrics, artist } = req.body;
 
