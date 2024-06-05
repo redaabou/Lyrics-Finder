@@ -40,3 +40,47 @@ export const getSongsByArtist = async (req: Request, res: Response): Promise<voi
     res.status(500).send('Server Error');
   }
 };
+
+export const searchSongByLyrics = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { lyrics } = req.query;
+    if (!lyrics) {
+      res.status(400).json({ msg: 'Lyrics query parameter is required' });
+      return;
+    }
+    const songs = await Song.find({ lyrics: { $regex: lyrics, $options: 'i' } });
+    if (songs.length === 0) {
+      res.status(404).json({ msg: 'No songs found' });
+      return;
+    }
+    res.json(songs);
+  } catch (err) {
+    res.status(500).send('Server Error');
+  }
+};
+
+export const createSong = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { genre, title, recorded_date, lyrics, artist } = req.body;
+
+    // Check if the artist exists
+    const existingArtist = await Artist.findById(artist);
+    if (!existingArtist) {
+      res.status(404).json({ msg: 'Artist not found' });
+      return;
+    }
+
+    const newSong = new Song({
+      genre,
+      title,
+      recorded_date,
+      lyrics,
+      artist,
+    });
+
+    const song = await newSong.save();
+    res.status(201).json(song);
+  } catch (err) {
+    res.status(500).send('Server Error');
+  }
+};
