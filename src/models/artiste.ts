@@ -1,41 +1,23 @@
-import mongoose from "mongoose";
-const schema = mongoose.Schema;
+import mongoose, { Document, Schema } from "mongoose";
 
-// artist schema
-const artistSchema = new schema(
-  {
-    firstname: {
-      type: String,
-      required: true,
-    },
-    lastname: {
-      type: String,
-      required: true,
-    },
-    picture_url: {
-      type: String,
-      required: true,
-    },
-    genre: {
-      type: String,
-      required: true,
-    },
-    born_date: {
-      type: Date,
-      required: true,
-    },
-    bord_city: {
-      type: String,
-      required: true,
-    },
-    died_date: {
-      type: Date,
-      required: true,
-    },
-  },
-  { timestamps: true }
-);
+interface IArtist extends Document {
+  firstname: string;
+  lastname: string;
+  picture_url: string;
+  genre: string;
+  born_date: Date;
+  born_city: string;
+  died_date?: Date;
+}
 
-const Artist = mongoose.model("Artist", artistSchema);
+const ArtistSchema = new Schema<IArtist>({
+  firstname: { type: String, required: true },
+  lastname: { type: String, required: true },
+  picture_url: { type: String },
+  genre: { type: String },
+  born_date: { type: Date },
+  born_city: { type: String },
+  died_date: { type: Date },
+});
 
-export { Artist };
+export default mongoose.model<IArtist>("Artist", ArtistSchema);
