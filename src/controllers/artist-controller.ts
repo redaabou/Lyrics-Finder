@@ -1,6 +1,5 @@
-import  Artist  from "../models/artiste";
+import Artist from "../models/artiste";
 import Express from "express";
-
 export const addArtist = async (
   req: Express.Request,
   res: Express.Response

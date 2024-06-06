@@ -1,5 +1,6 @@
 import mongoose, { Document, Schema } from "mongoose";
 import { isEmail } from "validator";
+import bcrypt from "bcrypt";
 // Define the TypeScript interface for a User
 interface IUser extends Document {
   firstname: string;
@@ -45,7 +46,11 @@ const userSchema = new Schema<IUser>(
   },
   { timestamps: true }
 );
-
+userSchema.pre("save", async function (next) {
+  const salt = await bcrypt.genSalt();
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
+});
 const User = mongoose.model<IUser>("User", userSchema);
 
 export { userSchema, User, IUser };
