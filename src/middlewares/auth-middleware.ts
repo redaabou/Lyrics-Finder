@@ -13,6 +13,7 @@ const requireAuth = (req, res, next) => {
           .json({ message: "Unauthorized access. Please authenticate." });
       } else {
         const userId = decodedToken.id;
+        req.userId = userId;
         next();
       }
     });

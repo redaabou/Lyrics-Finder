@@ -35,7 +35,12 @@ const createUser = async (req, res) => {
   const { email, password, firstname, lastname } = req.body;
   try {
     // creat a new user
-    const newUser = await User.create({ email, password, firstname, lastname });
+    const newUser = await User.create({
+      email,
+      password,
+      firstname,
+      lastname,
+    });
     const token = createTocken(newUser._id);
     /*
     res.setHeader("Authorization", token, {
