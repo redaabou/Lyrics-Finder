@@ -1,23 +1,25 @@
 import jwt from "jsonwebtoken";
+import { constrainedMemory } from "process";
 
 const requireAuth = (req, res, next) => {
   const authHeader = req.headers["authorization"];
 
   if (authHeader) {
     const token = authHeader.split(" ")[1]; // Split "Bearer <token>" to get the token part
-    console.log(token);
-
     jwt.verify(token, "secrut_Code", (err, decodedToken) => {
       if (err) {
-        res.json({ message: "you are not authaniketed" });
+        res
+          .status(401)
+          .json({ message: "Unauthorized access. Please authenticate." });
       } else {
-        console.log(decodedToken);
-
+        const userId = decodedToken.id;
         next();
       }
     });
   } else {
-    res.json({ message: "you are not authaniketed" });
+    res
+      .status(401)
+      .json({ message: "Unauthorized access. Please authenticate." });
   }
 };
 
