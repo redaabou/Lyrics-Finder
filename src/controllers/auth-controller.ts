@@ -25,23 +25,30 @@ function handleError(err) {
 // function to creat a jsonwebtoken
 
 const maxAge = 3 * 24 * 60 * 60;
-const createTocken = (id) => {
-  return jwt.sign({ id }, "secrut_Code", { expiresIn: maxAge });
+const createTocken = (id, isAdmin) => {
+  return jwt.sign({ id, isAdmin }, process.env.ACCESS_TOKEN_SECRET, {
+    expiresIn: maxAge
+  });
 };
 // implement the functionalty
 const createUser = async (req, res) => {
   const { email, password, firstname, lastname } = req.body;
   try {
     // creat a new user
-    const newUser = await User.create({ email, password, firstname, lastname });
-    const token = createTocken(newUser._id);
+    const newUser = await User.create({
+      email,
+      password,
+      firstname,
+      lastname,
+    });
+    const token = createTocken(newUser._id, newUser.isAdmin);
     /*
     res.setHeader("Authorization", token, {
       httpOnly: true,
       maxAge: maxAge * 1000,
     });*/
     //res.cookie("JWT", token, { httpOnly: true, maxAge: maxAge * 1000 });
-    res.setHeader("Authorization", "Bearer " + token);
+    res.setHeader("Authorization", token);
 
     // return just for the test
     res.status(201).json({ User: newUser._id });
@@ -73,13 +80,14 @@ const logIn = async (
     }
 
     // Return the user details for the test
-    const token = createTocken(user._id);
+    const token = createTocken(user._id, user.isAdmin);
+    res.setHeader("Authorization", token);
+
     /*
     res.setHeader("Authorization", token, {
       httpOnly: true,
       maxAge: maxAge * 1000,
     });*/
-    res.setHeader("Authorization", "Bearer " + token);
 
     //res.cookie("JWT", token, { httpOnly: true, maxAge: maxAge * 1000 });
     // return just for the test

@@ -18,7 +18,7 @@ export const addArtist = async (req: Request, res: Response): Promise<void> => {
       return;
     }
     let picture_url = null;
-    
+
     if (req.file) {
       const result = await cloudinary.uploader.upload(req.file.path);
       picture_url = result.secure_url;
