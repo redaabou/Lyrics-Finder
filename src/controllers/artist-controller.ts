@@ -1,17 +1,39 @@
 import Artist from "../models/artiste";
+import { validationResult } from "express-validator";
+import { cloudinary } from "../config/cloudinary";
+import { disconnect } from "process";
 import Express from "express";
 import mongoose from "mongoose";
 
-// add artist
-export const addArtist = async (
-  req: Express.Request,
-  res: Express.Response
-) => {
-  const artistData = req.body;
+export const addArtist = async (req: Express.Request, res: Express.Response): Promise<void> => {
+  const { firstname, lastname, genre, born_date, born_city, died_date } =
+    req.body;
+
   try {
-    console.log(artistData);
-    const artist = await Artist.create(artistData);
-    res.status(201).json({ message: "Artist added successfuly!", artist });
+    const existingArtist = await Artist.findOne({ firstname, lastname });
+    if (existingArtist) {
+      res.status(409).json({ msg: "Aritst already exists" });
+      return;
+    }
+    let picture_url = null;
+
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path);
+      picture_url = result.secure_url;
+    }
+
+    const artist = new Artist({
+      firstname,
+      lastname,
+      genre,
+      born_date,
+      born_city,
+      died_date,
+      picture_url,
+    });
+
+    await artist.save();
+    res.status(201).json(artist);
   } catch (error) {
     res.status(500).json({ error: error.toString() });
   }
