@@ -26,7 +26,9 @@ function handleError(err) {
 
 const maxAge = 3 * 24 * 60 * 60;
 const createTocken = (id) => {
-  return jwt.sign({ id }, "secrut_Code", { expiresIn: maxAge });
+  return jwt.sign({ id }, process.env.ACCESS_TOKEN_SECRET, {
+    expiresIn: maxAge,
+  });
 };
 // implement the functionalty
 const createUser = async (req, res) => {
@@ -74,12 +76,13 @@ const logIn = async (
 
     // Return the user details for the test
     const token = createTocken(user._id);
+    res.setHeader("Authorization", "Bearer " + token);
+
     /*
     res.setHeader("Authorization", token, {
       httpOnly: true,
       maxAge: maxAge * 1000,
     });*/
-    res.setHeader("Authorization", "Bearer " + token);
 
     //res.cookie("JWT", token, { httpOnly: true, maxAge: maxAge * 1000 });
     // return just for the test

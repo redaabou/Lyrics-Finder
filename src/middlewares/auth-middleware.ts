@@ -6,7 +6,7 @@ const requireAuth = (req, res, next) => {
 
   if (authHeader) {
     const token = authHeader.split(" ")[1]; // Split "Bearer <token>" to get the token part
-    jwt.verify(token, "secrut_Code", (err, decodedToken) => {
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decodedToken) => {
       if (err) {
         res
           .status(401)
