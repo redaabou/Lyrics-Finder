@@ -6,6 +6,9 @@ import {
   searchSongByLyrics,
   createSong,
   getSongsByArtistName,
+  updateSongById,
+  getSongById,
+  deleteSongById
 } from "../controllers/song-controller";
 import { validateCreateSong } from "../validators/songValidation";
 import { validate } from "../middlewares/validate";
@@ -30,5 +33,9 @@ router.get("/search/lyrics", searchSongByLyrics);
 // Routw de la creation d un chanson
 
 router.post("/addsong", validateCreateSong, validate, createSong);
+
+router.put('/songs/:id', updateSongById);
+router.get('/songs/:id', getSongById);
+router.delete('/songs/:id', deleteSongById);
 
 export default router;
