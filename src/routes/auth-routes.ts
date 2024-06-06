@@ -6,6 +6,6 @@ import { registerValidationRules } from "../validators/registerValidation";
 import { logInValidationRules } from "../validators/logInValidation";
 
 router.post("/singup", registerValidationRules, validate, createUser);
-router.post("/login", registerValidationRules, validate, logIn);
+router.post("/login", logInValidationRules, validate, logIn);
 
 export { router as authRouters };
