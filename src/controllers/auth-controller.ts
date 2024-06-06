@@ -25,8 +25,8 @@ function handleError(err) {
 // function to creat a jsonwebtoken
 
 const maxAge = 3 * 24 * 60 * 60;
-const createTocken = (id) => {
-  return jwt.sign({ id }, process.env.ACCESS_TOKEN_SECRET, {
+const createTocken = (id, isAdmin) => {
+  return jwt.sign({ id, isAdmin }, process.env.ACCESS_TOKEN_SECRET, {
     expiresIn: maxAge,
   });
 };
@@ -41,7 +41,7 @@ const createUser = async (req, res) => {
       firstname,
       lastname,
     });
-    const token = createTocken(newUser._id);
+    const token = createTocken(newUser._id, newUser.isAdmin);
     /*
     res.setHeader("Authorization", token, {
       httpOnly: true,
@@ -80,7 +80,7 @@ const logIn = async (
     }
 
     // Return the user details for the test
-    const token = createTocken(user._id);
+    const token = createTocken(user._id, user.isAdmin);
     res.setHeader("Authorization", "Bearer " + token);
 
     /*

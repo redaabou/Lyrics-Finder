@@ -1,3 +1,4 @@
+import { ResultWithContextImpl } from "express-validator/lib/chain";
 import jwt from "jsonwebtoken";
 import { constrainedMemory } from "process";
 
@@ -12,8 +13,10 @@ const requireAuth = (req, res, next) => {
           .status(401)
           .json({ message: "Unauthorized access. Please authenticate." });
       } else {
-        const userId = decodedToken.id;
-        req.userId = userId;
+        const { id, isAdmin } = decodedToken;
+
+        req.user = { id, isAdmin };
+
         next();
       }
     });
