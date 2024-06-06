@@ -115,3 +115,76 @@ export const createSong = async (req: Request, res: Response): Promise<void> => 
     res.status(500).send('Server Error');
   }
 };
+
+
+//update
+export const updateSongById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { genre, title, recorded_date, lyrics, artist } = req.body;
+
+    // Check if the song exists
+    const existingSong = await Song.findById(id);
+    if (!existingSong) {
+      res.status(404).json({ msg: 'Song not found' });
+      return;
+    }
+
+    // Check if the artist exists (if provided)
+    if (artist) {
+      const existingArtist = await Artist.findById(artist);
+      if (!existingArtist) {
+        res.status(404).json({ msg: 'Artist not found' });
+        return;
+      }
+    }
+
+    // Update the song fields
+    existingSong.genre = genre ?? existingSong.genre;
+    existingSong.title = title ?? existingSong.title;
+    existingSong.recorded_date = recorded_date ?? existingSong.recorded_date;
+    existingSong.lyrics = lyrics ?? existingSong.lyrics;
+    existingSong.artist = artist ?? existingSong.artist;
+
+    const updatedSong = await existingSong.save();
+    res.status(200).json(updatedSong);
+  } catch (err) {
+    res.status(500).send('Server Error');
+  }
+};
+
+//getSongById
+
+export const getSongById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const song = await Song.findById(id);
+    if (!song) {
+      res.status(404).json({ msg: 'Song not found' });
+      return;
+    }
+
+    res.status(200).json(song);
+  } catch (err) {
+    res.status(500).send('Server Error');
+  }
+};
+
+//deleteSong
+
+export const deleteSongById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const song = await Song.findByIdAndDelete(id);
+    if (!song) {
+      res.status(404).json({ msg: 'Song not found' });
+      return;
+    }
+
+    res.status(200).json({ msg: 'Song deleted successfully' });
+  } catch (err) {
+    res.status(500).send('Server Error');
+  }
+};

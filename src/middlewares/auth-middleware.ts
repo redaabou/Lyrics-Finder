@@ -1,8 +1,20 @@
+import { Request, Response, NextFunction } from "express";
 import { ResultWithContextImpl } from "express-validator/lib/chain";
 import jwt from "jsonwebtoken";
 import { constrainedMemory } from "process";
+declare global {
+  interface userData {
+    id : string,
+    isAdmin : boolean
+  }
+  namespace  Express {
+    interface Request {
+      user: userData
+    }
+  }
+}
 
-const requireAuth = (req, res, next) => {
+const requireAuth = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers["authorization"];
 
   if (authHeader) {
@@ -14,7 +26,6 @@ const requireAuth = (req, res, next) => {
           .json({ message: "Unauthorized access. Please authenticate." });
       } else {
         const { id, isAdmin } = decodedToken;
-
         req.user = { id, isAdmin };
 
         next();
