@@ -8,6 +8,7 @@ interface IUser extends Document {
   email: string;
   password: string;
   isAdmin: boolean;
+  isSubscriber: boolean;
 }
 
 // Utilisateur
@@ -40,6 +41,10 @@ const userSchema = new Schema<IUser>(
       minlength: [8, "Password must be at least 8 characters long."],
     },
     isAdmin: {
+      type: Boolean,
+      default: false,
+    },
+    isSubscriber: {
       type: Boolean,
       default: false,
     },
