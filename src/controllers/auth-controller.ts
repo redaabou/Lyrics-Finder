@@ -1,6 +1,7 @@
 // importe the user model from the database
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs"; // Assuming you're hashing passwords
+import crypto from "crypto";
 import cookie from "cookie-parser";
 import jwt from "jsonwebtoken";
 import { User } from "../models/user";
@@ -27,7 +28,7 @@ function handleError(err) {
 const maxAge = 3 * 24 * 60 * 60;
 const createTocken = (id, isAdmin) => {
   return jwt.sign({ id, isAdmin }, process.env.ACCESS_TOKEN_SECRET, {
-    expiresIn: maxAge
+    expiresIn: maxAge,
   });
 };
 // implement the functionalty
@@ -97,5 +98,110 @@ const logIn = async (
     res.status(500).json({ error: "An unexpected error occurred." });
   }
 };
+/*
+  // Generate a random buffer of 4 bytes
+  const buffer = crypto.randomBytes(4);
 
-export { createUser, logIn };
+  // Convert the buffer to a hexadecimal string
+  const token = buffer.toString("hex");
+
+  // Convert hexadecimal to base64 to include alphanumeric characters
+  const base64Token = Buffer.from(token, "hex").toString("base64");
+
+  // Slice to ensure it's 6 characters long
+  const finalToken = base64Token.slice(0, 6);
+
+  */
+
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  const hashedToken = jwt.sign(
+    { email: email, token: resetToken },
+    process.env.ACCESS_TOKEN_SECRET,
+    {
+      expiresIn: "1h",
+    }
+  );
+
+  const resetURL = `${req.protocol}://${req.get(
+    "host"
+  )}/reset-password/${hashedToken}`;
+  const message = `Forgot your password? This is your restored code: ${resetToken}. Click the link to reset your password: ${resetURL}`;
+
+  try {
+    // use send email servise
+    /*
+    await sendEmail({
+      email: user.email,
+      subject: "Your password reset token (valid for 1 hour)",
+      message,
+    });
+    */
+
+    res.status(200).json({
+      status: "success",
+      message: "Token sent to email!",
+      emailMessage: message,
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: "error",
+      message: "There was an error sending the email. Try again later.",
+    });
+  }
+};
+const resetPassword = async (req, res) => {
+  const { email, restoredCode, newPassword } = req.body;
+  const hashedToken = req.params.token;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    jwt.verify(
+      hashedToken,
+      process.env.ACCESS_TOKEN_SECRET,
+      async (err, decodedToken) => {
+        if (err) {
+          res.status(401).json({ message: "Invalid or expired token" });
+        } else {
+          const { userEmail, restoredCodeT } = decodedToken;
+          if (userEmail === email && restoredCodeT === restoredCode) {
+            // Validate new password (example: check length)
+            if (newPassword.length < 8) {
+              res.status(400).json({
+                message: "New password must be at least 8 characters long",
+              });
+            }
+
+            user.password = newPassword;
+            await user.save();
+
+            res
+              .status(200)
+              .json({ message: "Password has been successfully changed" });
+          } else {
+            res.status(403).json({
+              message: "You don't have permission to change the password",
+            });
+          }
+        }
+      }
+    );
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export { createUser, logIn, forgotPassword, resetPassword };
