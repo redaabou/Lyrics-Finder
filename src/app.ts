@@ -1,14 +1,9 @@
 import express from "express";
-import { artistRoute } from "./routes";
 const app = express();
 
 // importe the routes from index.ts
-import { authRouters } from "./routes";
-import songRoutes from "./routes/song-routes";
+import { authRouters, songRoutes, artistRoute,newsletterRoute, adminRoutes,userRoutes } from "./routes/index";
 
-import { newsletterRoute } from "./routes/newsletter-routes";
-import { userRoutes } from "./routes/user-routes";
-import adminRoutes from "./routes/admin-routes";
 
 // Middleware de base
 app.use(express.static("public"));

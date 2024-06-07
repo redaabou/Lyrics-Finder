@@ -6,6 +6,7 @@ import Artist from '../models/artiste';
 
 export const updateUserRole = async (req: Request, res: Response): Promise<void> => {
     const { email, newRole } = req.body;
+    console.log(email, newRole);
   
     try {
       const user = await User.findOne({ email });
@@ -15,7 +16,7 @@ export const updateUserRole = async (req: Request, res: Response): Promise<void>
         return;
       }
   
-      await User.updateOne({ email }, { role: newRole });
+      await User.updateOne({ email }, { isAdmin: newRole });
   
       res.status(200).json({ message: 'User role updated successfully' });
     } catch (error) {
