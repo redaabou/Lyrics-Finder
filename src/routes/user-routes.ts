@@ -1,7 +1,8 @@
 import { Router } from "express";
 const router: Router = Router();
 import { updateUser } from "../controllers/user-controller";
+import { requireAuth } from "../middlewares/auth-middleware";
 
-router.put("/:id", updateUser);
+router.patch("/", requireAuth, updateUser);
 
-export { router as userRoutes}
+export { router as userRoutes };

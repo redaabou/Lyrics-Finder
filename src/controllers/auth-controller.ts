@@ -1,8 +1,7 @@
 // importe the user model from the database
 import { Request, Response } from "express";
-import bcrypt from "bcryptjs"; // Assuming you're hashing passwords
+import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import cookie from "cookie-parser";
 import jwt from "jsonwebtoken";
 import { User } from "../models/user";
 import { sendEmail } from "../services/email-service";
@@ -24,14 +23,23 @@ function handleError(err) {
   return errors;
 }
 
-// function to creat a jsonwebtoken
+// function to generate a random code
+const virifyCode = () => {
+  return crypto
+    .randomBytes(3)
+    .toString("base64")
+    .replace(/[^a-zA-Z0-9]/g, "")
+    .slice(0, 6);
+};
 
-const maxAge = 3 * 24 * 60 * 60;
+// function to creat a jsonwebtoken
+const maxAge = 30 * 60;
 const createTocken = (id, isAdmin) => {
   return jwt.sign({ id, isAdmin }, process.env.ACCESS_TOKEN_SECRET, {
     expiresIn: maxAge,
   });
 };
+
 // implement the functionalty
 const createUser = async (req, res) => {
   const { email, password, firstname, lastname } = req.body;
@@ -44,22 +52,18 @@ const createUser = async (req, res) => {
       lastname,
     });
     const token = createTocken(newUser._id, newUser.isAdmin);
-    /*
-    res.setHeader("Authorization", token, {
-      httpOnly: true,
-      maxAge: maxAge * 1000,
-    });*/
-    //res.cookie("JWT", token, { httpOnly: true, maxAge: maxAge * 1000 });
+  
     res.setHeader("Authorization", token);
 
     // return just for the test
-    res.status(201).json({ User: newUser._id });
+    res.status(201).json({message:`Welcome ${newUser.firstname} you are successfully registered`});
   } catch (error) {
     const errors = handleError(error);
     res.status(404).json({ errors });
   }
 };
 
+// function to log in
 const logIn = async (
   req: Request<{}, {}, { email: string; password: string }>,
   res: Response
@@ -85,22 +89,16 @@ const logIn = async (
     const token = createTocken(user._id, user.isAdmin);
     res.setHeader("Authorization", token);
 
-    /*
-    res.setHeader("Authorization", token, {
-      httpOnly: true,
-      maxAge: maxAge * 1000,
-    });*/
-
-    //res.cookie("JWT", token, { httpOnly: true, maxAge: maxAge * 1000 });
     // return just for the test
-    res.status(200).json({ User: user._id });
+    res.status(200).json({ message: `Welcome back ${user.firstname}`});
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "An unexpected error occurred." });
   }
 };
 
-const resetPasswordT = async (
+// function to update the password
+const updatePassword = async (
   req: Request<{}, {}, { oldPassword: string; newPassword: string }>,
   res: Response
 ) => {
@@ -119,7 +117,7 @@ const resetPasswordT = async (
 
     if (!isValidPassword) {
       // Password does not match
-      return res.status(401).json({ error: "Invalid credentials." });
+      return res.status(401).json({ error: "the password is not correct." });
     }
 
     if (newPassword.length < 8) {
@@ -145,35 +143,16 @@ const resetPasswordT = async (
     // return just for the test
     res
       .status(200)
-      .json({ message: "password is updated", userEmail: user.email });
+      .json({ message: "password updated successfully" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "An unexpected error occurred." });
   }
 };
-/*
-  // Generate a random buffer of 4 bytes
-  const buffer = crypto.randomBytes(4);
 
-  // Convert the buffer to a hexadecimal string
-  const token = buffer.toString("hex");
 
-  // Convert hexadecimal to base64 to include alphanumeric characters
-  const base64Token = Buffer.from(token, "hex").toString("base64");
 
-  // Slice to ensure it's 6 characters long
-  const finalToken = base64Token.slice(0, 6);
-
-  */
-
-const generateToken = () => {
-  return crypto
-    .randomBytes(3)
-    .toString("base64")
-    .replace(/[^a-zA-Z0-9]/g, "")
-    .slice(0, 4);
-};
-
+// function to send a reset password email
 const forgotPassword = async (req, res) => {
   const { email } = req.body;
   const user = await User.findOne({ email });
@@ -181,11 +160,10 @@ const forgotPassword = async (req, res) => {
   if (!user) {
     return res.status(404).json({ message: "User not found" });
   }
-  const code = generateToken();
+  const code = virifyCode();
   const salt = await bcrypt.genSalt();
   const hashedPassword = await bcrypt.hash(code, salt);
 
-  //const resetToken = crypto.randomBytes(32).toString("hex");
   const hashedToken = jwt.sign(
     { email: email, token: hashedPassword },
     process.env.ACCESS_TOKEN_SECRET,
@@ -235,6 +213,7 @@ const forgotPassword = async (req, res) => {
   }
 };
 
+// function to reset the password
 const resetPassword = async (req, res) => {
   const { restoredCode, newPassword } = req.body;
   const hashedToken = req.params.token;
@@ -290,7 +269,7 @@ const resetPassword = async (req, res) => {
              Lyrics Finder  Team
             `;
 
-            const users = [user.email];
+            const users = [user];
 
             try {
               await sendEmail(users, subject, message);
@@ -300,10 +279,12 @@ const resetPassword = async (req, res) => {
                   "Your password has been successfully changed. A confirmation email has been sent to your email address.",
               });
             } catch (err) {
+              console.log(err);
               res.status(500).json({
                 status: "error",
                 message:
                   "Your password was changed, but we couldn't send the confirmation email. Please contact our support team if you have any concerns.",
+                    
               });
             }
           } else {
@@ -321,4 +302,4 @@ const resetPassword = async (req, res) => {
   }
 };
 
-export { createUser, logIn, forgotPassword, resetPassword, resetPasswordT };
+export { createUser, logIn, forgotPassword, resetPassword, updatePassword };

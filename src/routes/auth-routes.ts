@@ -5,7 +5,7 @@ import {
   logIn,
   forgotPassword,
   resetPassword,
-  resetPasswordT,
+  updatePassword,
 } from "../controllers/auth-controller";
 import { requireAuth } from "../middlewares/auth-middleware";
 import { validate } from "../middlewares/validate";
@@ -17,15 +17,15 @@ import { validateRestoredCodeAndNewPassword } from "../validators/restPasswordVa
 
 router.post("/singup", registerValidationRules, validate, createUser);
 router.post("/login", logInValidationRules, validate, logIn);
-router.put(
+router.patch(
   "/resetPassword",
   validatePasswords,
   validate,
   requireAuth,
-  resetPasswordT
+  updatePassword
 );
 router.post("/forgotPassword", validateEmail, validate, forgotPassword);
-router.put(
+router.patch(
   "/resetPassword/:token",
   validateRestoredCodeAndNewPassword,
   validate,

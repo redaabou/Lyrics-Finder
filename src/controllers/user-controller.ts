@@ -1,6 +1,5 @@
 import { User } from "../models/user";
 import Express from "express";
-import mongoose from "mongoose";
 
 // update user 
 
@@ -9,20 +8,26 @@ export const updateUser = async (
     res: Express.Response
   ) => {
     try {
-      if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-        return res.status(400).json({ message: "Invalid id" });
+      const exestingUser = await User.findOne({ _id: req.user.id });
+      if (!exestingUser) {
+        res.status(404).json({ message: "user not found" });
+        return;
       }
-  
-      const user = await User.updateOne(
-        { _id: req.params.id },
-        { $set: req.body }
-      );
-  
-      if (user.matchedCount === 0) {
-        return res.status(404).json({ message: "user Not Found" });
+      
+      const { email, firstname, lastname } = req.body;
+
+      if (email || firstname || lastname) {
+        const user = await User.updateOne(  
+          { _id: req.user.id },
+          { email, firstname, lastname }
+        );
+    
+        res.status(200).json({ message: "user updated successfully" });
+      }else{
+        res.status(400).json({ message: "you can only update email, firstname or lastname" });
+
       }
-  
-      res.status(200).json({ message: "user updated successfully" });
+     
     } catch (error) {
       res.status(500).json({ error: error.toString() });
     }

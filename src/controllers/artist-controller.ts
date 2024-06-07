@@ -36,6 +36,7 @@ export const addArtist = async (req: Express.Request, res: Express.Response): Pr
     await artist.save();
     res.status(201).json(artist);
   } catch (error) {
+    console.error(error); // Log the error to the console
     res.status(500).json({ error: error.toString() });
   }
 };
