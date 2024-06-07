@@ -51,11 +51,22 @@ const userSchema = new Schema<IUser>(
   },
   { timestamps: true }
 );
+
 userSchema.pre("save", async function (next) {
   const salt = await bcrypt.genSalt();
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
+
+/*
+userSchema.pre("findOneAndUpdate", async function (next) {
+  const update = this.getUpdate();
+  const salt = await bcrypt.genSalt();
+  this.password = await bcrypt.hash(this.password, salt);
+  console.log(this);
+  next();
+});
+*/
 const User = mongoose.model<IUser>("User", userSchema);
 
 export { userSchema, User, IUser };
