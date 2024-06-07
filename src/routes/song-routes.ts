@@ -4,16 +4,11 @@ import {
   getArtists,
   getSongsByArtistId,
   searchSongByLyrics,
-  createSong,
   getSongsByArtistName,
-  updateSongById,
   getSongById,
-  deleteSongById
 } from "../controllers/song-controller";
-import { validateCreateSong } from "../validators/songValidation";
-import { validate } from "../middlewares/validate";
+
 import { requireAuth } from "../middlewares/auth-middleware";
-import { checkAdmin } from '../middlewares/isAdmin'
 const router: Router = Router();
 
 // Route pour obtenir les paroles d'une chanson
@@ -34,9 +29,6 @@ router.get("/search/lyrics",requireAuth, searchSongByLyrics);
 
 router.get('/songs/:id',requireAuth, getSongById);
 
-//admin Routes
-router.post("/addsong",requireAuth,checkAdmin, validateCreateSong, validate, createSong);
-router.put('/songs/:id',requireAuth,checkAdmin, updateSongById);
-router.delete('/songs/:id',requireAuth,checkAdmin, deleteSongById);
+
 
 export default router;
