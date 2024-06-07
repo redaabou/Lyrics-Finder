@@ -114,6 +114,14 @@ const logIn = async (
 
   */
 
+const generateToken = () => {
+  return crypto
+    .randomBytes(3)
+    .toString("base64")
+    .replace(/[^a-zA-Z0-9]/g, "")
+    .slice(0, 4);
+};
+
 const forgotPassword = async (req, res) => {
   const { email } = req.body;
   const user = await User.findOne({ email });
@@ -121,7 +129,8 @@ const forgotPassword = async (req, res) => {
   if (!user) {
     return res.status(404).json({ message: "User not found" });
   }
-
+  const code = generateToken();
+  console.log(code);
   const resetToken = crypto.randomBytes(32).toString("hex");
 
   const hashedToken = jwt.sign(
@@ -135,21 +144,40 @@ const forgotPassword = async (req, res) => {
   const resetURL = `${req.protocol}://${req.get(
     "host"
   )}/resetPassword/${hashedToken}`;
-  const message = `Forgot your password? This is your restored code: ${resetToken}. Click the link to reset your password: ${resetURL}`;
+  const message = `
+  Hi ${user.firstname} ${user.lastname},
+  
+  We received a request to reset your password. Please use the following code to reset your password:
+  
+  Restoration Code: ${resetToken}
+  
+  You can also click the link below to reset your password directly:
+  
+  ${resetURL}
+  
+  If you did not request a password reset, please ignore this email or contact our support team if you have any concerns.
+  
+  Best regards,
+  Lyrics Finder Team
+  `;
 
   try {
     // use send email servise
-    const subject = "Your password reset token (valid for 1 hour)";
-    await sendEmail(user, subject, message);
+    const subject = "Password Reset Request (Valid for 1 Hour)";
+
+    const users = [user];
+    await sendEmail(users, subject, message);
 
     res.status(200).json({
       status: "success",
-      message: "Token sent to email!",
+      message:
+        "A password reset link and code have been sent to your email address. Please check your inbox and follow the instructions to reset your password.",
     });
   } catch (err) {
     res.status(500).json({
       status: "error",
-      message: "There was an error sending the email. Try again later.",
+      message:
+        "We encountered an issue while sending the email. Please check your email address and try again. If the problem persists, contact our support team.",
     });
   }
 };
@@ -190,17 +218,46 @@ const resetPassword = async (req, res) => {
               { password: hashedPassword }
             );
             if (updatedUser.modifiedCount === 0) {
-              return res
-                .status(500)
-                .json({ message: "Failed to update the password" });
+              return res.status(500).json({
+                status: "error",
+                message:
+                  "Failed to update the password. Please try again later.",
+              });
             }
-            const subject = "reset password";
-            const message = "Password has been successfully changed";
-            await sendEmail(user, subject, message);
-            res.status(200).json({ message });
+
+            const subject = "Password Successfully Changed";
+            const message = `
+            Hi ${user.firstname} ${user.lastname},
+            
+            This is a confirmation that your password has been successfully changed.
+            
+            If you did not perform this action, please contact our support team immediately.
+            
+            Best regards,
+             Lyrics Finder  Team
+            `;
+
+            const users = [user.email];
+
+            try {
+              await sendEmail(users, subject, message);
+              res.status(200).json({
+                status: "success",
+                message:
+                  "Your password has been successfully changed. A confirmation email has been sent to your email address.",
+              });
+            } catch (err) {
+              res.status(500).json({
+                status: "error",
+                message:
+                  "Your password was changed, but we couldn't send the confirmation email. Please contact our support team if you have any concerns.",
+              });
+            }
           } else {
             res.status(403).json({
-              message: "You don't have permission to change the password",
+              status: "error",
+              message:
+                "You don't have permission to change the password. Please check the restoration code and try again.",
             });
           }
         }
