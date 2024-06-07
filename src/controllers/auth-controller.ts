@@ -99,6 +99,58 @@ const logIn = async (
     res.status(500).json({ error: "An unexpected error occurred." });
   }
 };
+
+const resetPasswordT = async (
+  req: Request<{}, {}, { oldPassword: string; newPassword: string }>,
+  res: Response
+) => {
+  const { oldPassword, newPassword } = req.body;
+  const userId = req.user.id;
+  try {
+    // Find the user by email
+    const user = await User.findOne({ _id: userId });
+    if (!user) {
+      // User not found
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    // Compare the provided password with the stored hashed password
+    const isValidPassword = await bcrypt.compare(oldPassword, user.password);
+
+    if (!isValidPassword) {
+      // Password does not match
+      return res.status(401).json({ error: "Invalid credentials." });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({
+        message: "New password must be at least 8 characters long",
+      });
+    }
+
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    const updatedUser = await User.updateOne(
+      { _id: userId },
+      { password: hashedPassword }
+    );
+
+    if (updatedUser.modifiedCount === 0) {
+      return res.status(500).json({
+        status: "error",
+        message: "Failed to update the password. Please try again later.",
+      });
+    }
+    // return just for the test
+    res
+      .status(200)
+      .json({ message: "password is updated", userEmail: user.email });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "An unexpected error occurred." });
+  }
+};
 /*
   // Generate a random buffer of 4 bytes
   const buffer = crypto.randomBytes(4);
@@ -197,7 +249,6 @@ const resetPassword = async (req, res) => {
         } else {
           const { email, token } = decodedToken;
           const userEmail = email;
-          console.log(decodedToken);
           const user = await User.findOne({ email: userEmail });
 
           if (!user) {
@@ -270,4 +321,4 @@ const resetPassword = async (req, res) => {
   }
 };
 
-export { createUser, logIn, forgotPassword, resetPassword };
+export { createUser, logIn, forgotPassword, resetPassword, resetPasswordT };
