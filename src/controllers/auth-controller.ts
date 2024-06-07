@@ -5,6 +5,7 @@ import crypto from "crypto";
 import cookie from "cookie-parser";
 import jwt from "jsonwebtoken";
 import { User } from "../models/user";
+import { sendEmail } from "../services/email-service";
 
 //hundel the error
 function handleError(err) {
@@ -138,18 +139,12 @@ const forgotPassword = async (req, res) => {
 
   try {
     // use send email servise
-    /*
-    await sendEmail({
-      email: user.email,
-      subject: "Your password reset token (valid for 1 hour)",
-      message,
-    });
-    */
+    const subject = "Your password reset token (valid for 1 hour)";
+    await sendEmail(user, subject, message);
 
     res.status(200).json({
       status: "success",
       message: "Token sent to email!",
-      emailMessage: message,
     });
   } catch (err) {
     res.status(500).json({
@@ -199,10 +194,10 @@ const resetPassword = async (req, res) => {
                 .status(500)
                 .json({ message: "Failed to update the password" });
             }
-
-            res
-              .status(200)
-              .json({ message: "Password has been successfully changed" });
+            const subject = "reset password";
+            const message = "Password has been successfully changed";
+            await sendEmail(user, subject, message);
+            res.status(200).json({ message });
           } else {
             res.status(403).json({
               message: "You don't have permission to change the password",
