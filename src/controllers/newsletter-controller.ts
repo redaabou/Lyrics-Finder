@@ -1,7 +1,8 @@
 import {User} from "../models/user";
 import Express from "express";
+import {sendEmail} from "../services/email-service";
 import mongoose from "mongoose";
-import nodemailer from 'nodemailer';
+
 
 
 // get the email of the subscriber from the user wher isSubscriber is true
@@ -18,22 +19,9 @@ export const sendMailToAllSubs = async (
         .status(404)
         .json({ message: "No Subscriber Found In The Database!" });
     }
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT,
-      secure: true,
-      auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-      },
-  });
-
-  await transporter.sendMail({
-    from: process.env.SMTP_USER,
-    to: subscribers.map(subscriber => subscriber.email).join(',') ,
-    subject: 'Welcome to our Newsletter!',
-    text: 'Thank you for subscribing to our newsletter. You will now receive regular updates from us.'
-});
+  let subject = "Welcome to our newsletter";
+  let message = "Thank you for subscribing to our newsletter. You will receive updates about our latest products and offers. Stay tuned!";
+  await sendEmail(subscribers, subject, message);  
 
   res.status(200).json({ message: 'Emails sent successfully' });
 
@@ -57,11 +45,14 @@ export const subscribe = async (req:Express.Request, res:Express.Response) => {
 
 // unsubscribe from newsletter
 export const unsubscribe = async (req:Express.Request, res:Express.Response) => {
+  console.log(req.user.id);
   try {
     const user = await User.updateOne(
       { _id: req.user.id },
       { $set: { isSubscriber: false } }
     );
+    
+    
     res.status(200).json({ message: "You have successfully unsubscribed"});
   } catch (error) {
     res.status(500).json({ error: error.toString() });
