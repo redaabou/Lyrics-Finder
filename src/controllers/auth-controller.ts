@@ -133,7 +133,7 @@ const forgotPassword = async (req, res) => {
 
   const resetURL = `${req.protocol}://${req.get(
     "host"
-  )}/reset-password/${hashedToken}`;
+  )}/resetPassword/${hashedToken}`;
   const message = `Forgot your password? This is your restored code: ${resetToken}. Click the link to reset your password: ${resetURL}`;
 
   try {
@@ -158,6 +158,7 @@ const forgotPassword = async (req, res) => {
     });
   }
 };
+
 const resetPassword = async (req, res) => {
   const { restoredCode, newPassword } = req.body;
   const hashedToken = req.params.token;
@@ -170,8 +171,10 @@ const resetPassword = async (req, res) => {
         if (err) {
           res.status(401).json({ message: "Invalid or expired token" });
         } else {
-          const { userEmail, token } = decodedToken;
-          const user = await User.findOne({ userEmail });
+          const { email, token } = decodedToken;
+          const userEmail = email;
+          console.log(decodedToken);
+          const user = await User.findOne({ email: userEmail });
 
           if (!user) {
             return res.status(400).json({ message: "User not found" });
@@ -184,13 +187,18 @@ const resetPassword = async (req, res) => {
               });
             }
 
+            const salt = await bcrypt.genSalt();
+            const hashedPassword = await bcrypt.hash(newPassword, salt);
+
             const updatedUser = await User.updateOne(
               { email: userEmail },
-              {
-                password: newPassword,
-              }
+              { password: hashedPassword }
             );
-            console.log(updatedUser);
+            if (updatedUser.modifiedCount === 0) {
+              return res
+                .status(500)
+                .json({ message: "Failed to update the password" });
+            }
 
             res
               .status(200)
