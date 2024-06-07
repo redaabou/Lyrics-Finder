@@ -8,6 +8,7 @@ interface IUser extends Document {
   email: string;
   password: string;
   isAdmin: boolean;
+  isSubscriber: boolean;
 }
 
 // Utilisateur
@@ -42,6 +43,10 @@ const userSchema = new Schema<IUser>(
     isAdmin: {
       type: Boolean,
       default: false,
+    },
+    isSubscriber: {
+      type: Boolean,
+      default: true,
     },
   },
   { timestamps: true }

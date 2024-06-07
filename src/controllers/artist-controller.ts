@@ -1,13 +1,11 @@
-import { Request, Response } from "express";
 import Artist from "../models/artiste";
 import { validationResult } from "express-validator";
 import { cloudinary } from "../config/cloudinary";
 import { disconnect } from "process";
 import Express from "express";
 import mongoose from "mongoose";
-import artiste from "../models/artiste";
 
-export const addArtist = async (req: Request, res: Response): Promise<void> => {
+export const addArtist = async (req: Express.Request, res: Express.Response): Promise<void> => {
   const { firstname, lastname, genre, born_date, born_city, died_date } =
     req.body;
 
@@ -69,14 +67,12 @@ export const getOneArtist = async (
   try {
     const { firstName, lastName } = req.query;
 
-    // Validate query parameters
     if (!firstName && !lastName) {
       return res
         .status(400)
         .json({ message: "Please provide a first name or last name." });
     }
 
-    // Build the query conditionally based on provided parameters
     let query = {};
     if (firstName && lastName) {
       query = { firstname: firstName, lastname: lastName };
@@ -86,18 +82,14 @@ export const getOneArtist = async (
       query = { lastname: lastName };
     }
 
-    // Find the artist by the constructed query
     const artist = await Artist.find(query);
 
-    // If no artist is found, return a 404 response
     if (artist.length === 0) {
       return res.status(404).json({ message: "Artist Not Found" });
     }
 
-    // Respond with the artist data
     res.status(200).json(artist);
   } catch (error) {
-    // Handle any errors that occur during the process
     res.status(500).json({ error: error.message });
   }
 };
