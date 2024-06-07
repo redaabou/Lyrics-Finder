@@ -11,17 +11,19 @@ import { requireAuth } from "../middlewares/auth-middleware";
 import { validateArtist } from "../validators/artisteValidation";
 import { validate } from "../middlewares/validate";
 import upload from "./../config/multer";
+import {checkAdmin} from "../middlewares/isAdmin";
 
 router.post(
   "/add-artist",
   requireAuth,
+  checkAdmin,
   upload,
   validateArtist,
   validate,
   addArtist
 );
-router.route("/").get(getAllArtist);
-router.route("/search/:firstName?/:lastName?").get(getOneArtist);
-router.route("/:id").put(updateArtist).delete(deleteArtist);
+router.route("/").get(requireAuth, getAllArtist);
+router.route("/search/:firstName?/:lastName?").get(requireAuth, getOneArtist);
+router.route("/:id").put(requireAuth, checkAdmin, updateArtist).delete(requireAuth, checkAdmin, deleteArtist);
 
 export default router;

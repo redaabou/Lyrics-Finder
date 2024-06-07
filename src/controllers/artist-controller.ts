@@ -5,6 +5,7 @@ import { disconnect } from "process";
 import Express from "express";
 import mongoose from "mongoose";
 
+// add artist
 export const addArtist = async (req: Express.Request, res: Express.Response): Promise<void> => {
   const { firstname, lastname, genre, born_date, born_city, died_date } =
     req.body;
