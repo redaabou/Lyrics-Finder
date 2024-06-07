@@ -13,6 +13,6 @@ import { logInValidationRules } from "../validators/logInValidation";
 router.post("/singup", registerValidationRules, validate, createUser);
 router.post("/login", logInValidationRules, validate, logIn);
 router.post("/forgotPassword", forgotPassword);
-router.patch("/resetPassword/:token", resetPassword);
+router.put("/resetPassword/:token", resetPassword);
 
 export { router as authRouters };

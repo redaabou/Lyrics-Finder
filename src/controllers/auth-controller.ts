@@ -159,16 +159,10 @@ const forgotPassword = async (req, res) => {
   }
 };
 const resetPassword = async (req, res) => {
-  const { email, restoredCode, newPassword } = req.body;
+  const { restoredCode, newPassword } = req.body;
   const hashedToken = req.params.token;
 
   try {
-    const user = await User.findOne({ email });
-
-    if (!user) {
-      return res.status(400).json({ message: "User not found" });
-    }
-
     jwt.verify(
       hashedToken,
       process.env.ACCESS_TOKEN_SECRET,
@@ -176,17 +170,27 @@ const resetPassword = async (req, res) => {
         if (err) {
           res.status(401).json({ message: "Invalid or expired token" });
         } else {
-          const { userEmail, restoredCodeT } = decodedToken;
-          if (userEmail === email && restoredCodeT === restoredCode) {
+          const { userEmail, token } = decodedToken;
+          const user = await User.findOne({ userEmail });
+
+          if (!user) {
+            return res.status(400).json({ message: "User not found" });
+          }
+          if (token === restoredCode) {
             // Validate new password (example: check length)
             if (newPassword.length < 8) {
-              res.status(400).json({
+              return res.status(400).json({
                 message: "New password must be at least 8 characters long",
               });
             }
 
-            user.password = newPassword;
-            await user.save();
+            const updatedUser = await User.updateOne(
+              { email: userEmail },
+              {
+                password: newPassword,
+              }
+            );
+            console.log(updatedUser);
 
             res
               .status(200)
