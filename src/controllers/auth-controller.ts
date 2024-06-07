@@ -130,11 +130,12 @@ const forgotPassword = async (req, res) => {
     return res.status(404).json({ message: "User not found" });
   }
   const code = generateToken();
-  console.log(code);
-  const resetToken = crypto.randomBytes(32).toString("hex");
+  const salt = await bcrypt.genSalt();
+  const hashedPassword = await bcrypt.hash(code, salt);
 
+  //const resetToken = crypto.randomBytes(32).toString("hex");
   const hashedToken = jwt.sign(
-    { email: email, token: resetToken },
+    { email: email, token: hashedPassword },
     process.env.ACCESS_TOKEN_SECRET,
     {
       expiresIn: "1h",
@@ -149,7 +150,7 @@ const forgotPassword = async (req, res) => {
   
   We received a request to reset your password. Please use the following code to reset your password:
   
-  Restoration Code: ${resetToken}
+  Restoration Code: ${code}
   
   You can also click the link below to reset your password directly:
   
@@ -202,7 +203,8 @@ const resetPassword = async (req, res) => {
           if (!user) {
             return res.status(400).json({ message: "User not found" });
           }
-          if (token === restoredCode) {
+          const isValidPassword = await bcrypt.compare(restoredCode, token);
+          if (isValidPassword) {
             // Validate new password (example: check length)
             if (newPassword.length < 8) {
               return res.status(400).json({
