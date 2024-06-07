@@ -10,12 +10,12 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const sendEmail = async (subscribers) => {
+const sendEmail = async (subscribers, subject, message) => {
   await transporter.sendMail({
     from: process.env.SMTP_USER,
     to: subscribers.map((subscriber) => subscriber.email).join(","),
-    subject: "Welcome to our Newsletter!",
-    text: "Thank you for subscribing to our newsletter. You will now receive regular updates from us.",
+    subject: subject,
+    text: message,
   });
 };
 
