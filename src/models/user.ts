@@ -46,7 +46,7 @@ const userSchema = new Schema<IUser>(
     },
     isSubscriber: {
       type: Boolean,
-      default: false,
+      default: true,
     },
   },
   { timestamps: true }
